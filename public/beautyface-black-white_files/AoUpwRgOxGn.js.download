@@ -1,3 +1,0 @@
-;/*FB_PKG_DELIM*/
-
-__d("PolarisBoostPaymentsEntrypoint",[],(function(t,n,r,o,a,i){var e=Object.freeze({IG_SETTINGS_2_AD_PAYMENTS_NATIVE_SCREEN:"ig_settings_2_ad_payments_native_screen",IG_SETTINGS_2_AD_PAYMENTS_NATIVE_SCREEN_PAYMENT_SETTINGS_LINK:"ig_settings_2_ad_payments_native_screen_payment_settings_link",IG_SETTINGS_2_AD_PAYMENTS_ROW_M1_LINK:"ig_settings_2_ad_payments_row_m1_link"});i.default=e}),66);
