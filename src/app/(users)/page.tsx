@@ -30,7 +30,6 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-radiance-creamBackgroundColor text-radiance-charcoalTextColor">
       <main className="mx-auto max-w-7xl px-4 md:px-8">
-        
         {/* Heroes section */}
         <section className={sectionClass}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -44,26 +43,30 @@ export default function LandingPage() {
                   JRADIANCE
                 </h1>
                 <p className="text-lg md:text-xl text-gray-600 max-w-md leading-relaxed">
-                  Experience the glow of nature with our premium organic cosmetics and beauty essentials.
+                  Experience the glow of nature with our premium organic
+                  cosmetics and beauty essentials.
                 </p>
               </div>
 
               {/* Feature Tags */}
               <ul className="flex flex-wrap gap-4 pt-4">
                 <li className="flex items-center gap-2 bg-white/50 backdrop-blur-sm border border-gray-100 px-4 py-2 rounded-full text-xs font-bold">
-                  <Sparkles size={14} className="text-radiance-goldColor" /> Natural Beauty
+                  <Sparkles size={14} className="text-radiance-goldColor" />{" "}
+                  Natural Beauty
                 </li>
                 <li className="flex items-center gap-2 bg-white/50 backdrop-blur-sm border border-gray-100 px-4 py-2 rounded-full text-xs font-bold">
-                  <Leaf size={14} className="text-radiance-goldColor" /> Organic Products
+                  <Leaf size={14} className="text-radiance-goldColor" /> Organic
+                  Products
                 </li>
                 <li className="flex items-center gap-2 bg-white/50 backdrop-blur-sm border border-gray-100 px-4 py-2 rounded-full text-xs font-bold">
-                  <ShieldCheck size={14} className="text-radiance-goldColor" /> Eco-friendly
+                  <ShieldCheck size={14} className="text-radiance-goldColor" />{" "}
+                  Eco-friendly
                 </li>
               </ul>
 
               <div className="pt-6">
-                <Link 
-                  href="/shop" 
+                <Link
+                  href="/shop"
                   className="bg-radiance-charcoalTextColor text-white px-8 py-4 rounded-full font-bold text-sm hover:bg-radiance-goldColor transition-all shadow-xl inline-block"
                 >
                   Explore Collection
@@ -88,9 +91,13 @@ export default function LandingPage() {
         </section>
 
         {/* product image reels section */}
-        <section className={`image-reels-section ${sectionClass} border-t border-gray-100`}>
+        <section
+          className={`image-reels-section ${sectionClass} border-t border-gray-100`}
+        >
           <div className="image-reels-container">
-            <h2 className="text-2xl font-bold mb-8 text-center md:text-left">Trending Now</h2>
+            <h2 className="text-2xl font-bold mb-8 text-center md:text-left">
+              Trending Now
+            </h2>
             {/* add product.length < 12 slide later */}
             <div className="h-48 rounded-2xl bg-white/30 border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 italic text-sm">
               Product reels carousel placeholder
@@ -102,17 +109,24 @@ export default function LandingPage() {
         <section className={`product-list-section ${sectionClass}`}>
           <div className="flex justify-between items-end mb-10">
             <div className="space-y-1">
-              <h2 className="text-3xl font-black tracking-tight">JRADIANCE Product Feeds</h2>
-              <p className="text-gray-500 text-sm">Hand-picked organic solutions for your skin.</p>
+              <h2 className="text-3xl font-black tracking-tight">
+                JRADIANCE Product Feeds
+              </h2>
+              <p className="text-gray-500 text-sm">
+                Hand-picked organic solutions for your skin.
+              </p>
             </div>
-            <Link href="/shop" className="text-radiance-goldColor font-bold text-sm underline underline-offset-4">
+            <Link
+              href="/shop"
+              className="text-radiance-goldColor font-bold text-sm underline underline-offset-4"
+            >
               View all products
             </Link>
           </div>
-          
+
           {/* Grid placeholder for Product list components */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-             {/* import product list components here */}
+            {/* import product list components here */}
           </div>
         </section>
       </main>

@@ -40,21 +40,21 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${bodyClasses}`}>
         {/* Load Paystack inline script globally */}
-        <Script 
-          src="https://js.paystack.co/v1/inline.js" 
-          strategy="beforeInteractive" 
+        <Script
+          src="https://js.paystack.co/v1/inline.js"
+          strategy="beforeInteractive"
           async
-        /> 
+        />
         {/* Top Bar */}
-        <TopBar/>
-        
+        <TopBar />
+
         {/* Main content */}
         <main className="pb-20 md:pb-0">
           <div className="mx-auto max-w-6xl px-6 py-12">{children}</div>
         </main>
 
         {/* Nave bar */}
-        <BottomNavBar/>
+        <BottomNavBar />
       </body>
     </html>
   );

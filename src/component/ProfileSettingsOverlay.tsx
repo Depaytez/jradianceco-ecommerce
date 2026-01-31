@@ -110,7 +110,7 @@ export default function ProfileSettingsOverlay({
               </div>
             </div>
             <Link
-              href="/shop/signup-signin"
+              href="/shop/auth"
               onClick={onClose}
               className="flex items-center justify-between w-full bg-radiance-goldColor text-white text-xs font-bold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity"
             >
