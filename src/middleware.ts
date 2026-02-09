@@ -52,8 +52,22 @@ export async function middleware(req: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin") {
+    // Allow admin, agent, and chief_admin roles
+    const allowedRoles = ["admin", "agent", "chief_admin"];
+    if (!profile?.role || !allowedRoles.includes(profile.role)) {
       return NextResponse.redirect(new URL("/", req.url)); // Boot non-admins to home
+    }
+
+    // Log admin access for audit trail
+    try {
+      await supabase.from("admin_activity_logs").insert({
+        admin_id: user.id,
+        action: "dashboard_access",
+        resource_type: "admin_dashboard",
+      });
+    } catch (error) {
+      // Don't block request if logging fails
+      console.error("Failed to log admin access:", error);
     }
   }
 

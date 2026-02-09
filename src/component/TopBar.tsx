@@ -1,31 +1,24 @@
 "use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { UserRoundPen } from "lucide-react";
+import { UserRoundPen, Shield } from "lucide-react";
 import ProfileSettingsOverlay from "./ProfileSettingsOverlay";
 import { usePathname } from "next/navigation";
+import { useUser, useIsAdmin } from "@/context/UserContext";
 
-// Navigation component for the top of all pages
 export default function TopBar() {
-  // State to manage the profile overlay visibility
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  // Placeholder for user state (data synced from Supabase)
-  const [user] = useState<{
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-    image: string;
-  } | null>(null);
-
-  //   Hide Top Bar on /admin routes
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin"))
+  const user = useUser();
+  const isAdmin = useIsAdmin();
+
+  // Hide Top Bar on /admin routes
+  if (pathname?.startsWith("/admin")) {
     return (
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 md:px-6 py-2 flex items-center justify-end">
+        <div className="mx-auto max-w-7xl px-4 md:px-6 py-2 flex items-center justify-between">
           {/* Logo container */}
           <Link
             href="/"
@@ -38,48 +31,29 @@ export default function TopBar() {
               priority
               className="object-contain object-left"
             />
-            {/* Subtle gold line indicator on hover */}
             <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-radiance-goldColor transition-all duration-300 group-hover:w-1/2" />
           </Link>
 
-          {/* Profile and Settings interaction area (Always opens overlay now) */}
-          <div className="relative">
-            <button
-              onClick={() => setIsProfileOpen(true)}
-              className="flex flex-col items-center gap-0.5 group"
-            >
-              {user ? (
-                /* Displayed when User is Signed In */
-                <div className="relative h-9 w-9 rounded-full bg-radiance-goldColor border-2 border-white shadow-sm overflow-hidden">
-                  <Image
-                    src={user.image}
-                    alt={user.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                /* Displayed when User is NOT Signed In */
-                <div className="h-9 w-9 rounded-full bg-radiance-goldColor/10 flex items-center justify-center text-radiance-goldColor group-hover:bg-radiance-goldColor group-hover:text-white transition-all">
-                  <UserRoundPen size={18} />
-                </div>
-              )}
-
-              <span className="text-[9px] font-bold text-radiance-charcoalTextColor group-hover:text-radiance-goldColor transition-colors">
-                {user ? user.name.split(" ")[0] : "Account"}
-              </span>
-            </button>
-          </div>
+          {/* Admin info */}
+          {user && isAdmin && (
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-xs font-bold text-radiance-charcoalTextColor">
+                  {user.email}
+                </p>
+                <p className="text-[9px] text-gray-500 capitalize">
+                  {user.role}
+                </p>
+              </div>
+              <div className="h-9 w-9 rounded-full bg-radiance-goldColor flex items-center justify-center text-white">
+                <Shield size={18} />
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Profile & Settings Overlay Component */}
-        <ProfileSettingsOverlay
-          isOpen={isProfileOpen}
-          onClose={() => setIsProfileOpen(false)}
-          user={user}
-        />
       </header>
     );
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
@@ -96,41 +70,61 @@ export default function TopBar() {
             priority
             className="object-contain object-left"
           />
-          {/* Subtle gold line indicator on hover */}
           <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-radiance-goldColor transition-all duration-300 group-hover:w-1/2" />
         </Link>
 
-        {/* Profile and Settings interaction area (Always opens overlay now) */}
-        <div className="relative">
-          <button
-            onClick={() => setIsProfileOpen(true)}
-            className="flex flex-col items-center gap-0.5 group"
-          >
-            {user ? (
-              /* Displayed when User is Signed In */
-              <div className="relative h-9 w-9 rounded-full bg-radiance-goldColor border-2 border-white shadow-sm overflow-hidden">
-                <Image
-                  src={user.image}
-                  alt={user.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              /* Displayed when User is NOT Signed In */
-              <div className="h-9 w-9 rounded-full bg-radiance-goldColor/10 flex items-center justify-center text-radiance-goldColor group-hover:bg-radiance-goldColor group-hover:text-white transition-all">
-                <UserRoundPen size={18} />
-              </div>
-            )}
+        {/* Navigation and profile */}
+        <div className="flex items-center gap-4">
+          {/* Navigation links for authenticated users */}
+          {user && (
+            <>
+              <Link
+                href="/shop/history"
+                className="text-xs font-semibold text-gray-600 hover:text-radiance-goldColor transition-colors"
+              >
+                Orders
+              </Link>
+              <Link
+                href="/shop/wish-list"
+                className="text-xs font-semibold text-gray-600 hover:text-radiance-goldColor transition-colors"
+              >
+                Wishlist
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="text-xs font-semibold text-radiance-goldColor hover:text-radiance-charcoalTextColor transition-colors px-3 py-1 border border-radiance-goldColor rounded"
+                >
+                  Dashboard
+                </Link>
+              )}
+            </>
+          )}
 
-            <span className="text-[9px] font-bold text-radiance-charcoalTextColor group-hover:text-radiance-goldColor transition-colors">
-              {user ? user.name.split(" ")[0] : "Account"}
-            </span>
-          </button>
+          {/* Profile button */}
+          <div className="relative">
+            <button
+              onClick={() => setIsProfileOpen(true)}
+              className="flex flex-col items-center gap-0.5 group"
+            >
+              {user ? (
+                <div className="h-9 w-9 rounded-full bg-radiance-goldColor flex items-center justify-center text-white font-bold">
+                  {user.email ? user.email[0].toUpperCase() : "U"}
+                </div>
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-radiance-goldColor/10 flex items-center justify-center text-radiance-goldColor group-hover:bg-radiance-goldColor group-hover:text-white transition-all">
+                  <UserRoundPen size={18} />
+                </div>
+              )}
+              <span className="text-[9px] font-bold text-radiance-charcoalTextColor group-hover:text-radiance-goldColor transition-colors">
+                {user ? user.email?.split("@")[0] || "Account" : "Account"}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Profile & Settings Overlay Component */}
+      {/* Profile & Settings Overlay */}
       <ProfileSettingsOverlay
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}

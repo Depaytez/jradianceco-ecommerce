@@ -3,6 +3,7 @@ import "./globals.css";
 import Script from "next/script";
 import BottomNavBar from "@/component/BottomNavBar";
 import TopBar from "@/component/TopBar";
+import { UserProvider } from "@/context/UserContext";
 
 const bodyClasses = `
   min-h-screen 
@@ -45,16 +46,19 @@ export default function RootLayout({
           strategy="beforeInteractive"
           async
         />
-        {/* Top Bar */}
-        <TopBar />
 
-        {/* Main content */}
-        <main className="pb-20 md:pb-0">
-          <div className="mx-auto max-w-6xl px-6 py-12">{children}</div>
-        </main>
+        <UserProvider>
+          {/* Top Bar */}
+          <TopBar />
 
-        {/* Nave bar */}
-        <BottomNavBar />
+          {/* Main content */}
+          <main className="pb-20 md:pb-0">
+            <div className="mx-auto max-w-6xl px-6 py-12">{children}</div>
+          </main>
+
+          {/* Nave bar */}
+          <BottomNavBar />
+        </UserProvider>
       </body>
     </html>
   );

@@ -12,22 +12,13 @@ import {
   UserRoundPen,
   ChevronRight,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-
-// Define structured user type for Supabase data
-interface UserProfile {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  image: string; // image URL pointing to Namecheap storage
-}
+import type { AuthUser } from "@/types";
 
 interface ProfileSettingsOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  user: UserProfile | null;
+  user: AuthUser | null;
 }
 
 export default function ProfileSettingsOverlay({
@@ -62,35 +53,39 @@ export default function ProfileSettingsOverlay({
 
         {/* Conditional Header: User Data or Auth Links */}
         {user ? (
-          /* Displayed when User is Signed In (Supabase data) */
+          /* Displayed when User is Signed In */
           <div className="space-y-4 mb-8">
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-              <div className="relative h-14 w-14 rounded-full bg-radiance-goldColor overflow-hidden border-2 border-white shadow-sm">
-                <Image
-                  src={user.image}
-                  alt={user.name}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
+              <div className="relative h-14 w-14 rounded-full bg-radiance-goldColor overflow-hidden border-2 border-white shadow-sm flex items-center justify-center text-white font-bold">
+                <span className="text-lg">
+                  {user.email ? user.email[0].toUpperCase() : "U"}
+                </span>
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-radiance-charcoalTextColor text-sm">
-                  {user.name}
+                  {user.email || "User"}
                 </span>
                 <span className="text-[10px] text-gray-500 uppercase font-medium">
-                  {user.email}
+                  {user.role}
                 </span>
               </div>
             </div>
 
             <div className="px-2 space-y-2 text-xs text-gray-600">
               <p>
-                <strong>Phone:</strong> {user.phone}
+                <strong>Email:</strong>{" "}
+                <span className="text-radiance-charcoalTextColor">
+                  {user.email}
+                </span>
               </p>
-              <p>
-                <strong>Address:</strong> {user.address}
-              </p>
+              {user.role && (
+                <p>
+                  <strong>Role:</strong>{" "}
+                  <span className="capitalize text-radiance-goldColor font-semibold">
+                    {user.role}
+                  </span>
+                </p>
+              )}
             </div>
           </div>
         ) : (
