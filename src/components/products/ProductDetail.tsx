@@ -406,7 +406,7 @@ export default function ProductDetail({
                       >
                         <Minus size={16} />
                       </button>
-                      <span className="px-4 py-2 border border-gray-300 rounded-lg min-w-[60px] text-center">
+                      <span className="px-4 py-2 border border-gray-300 rounded-lg min-w-15 text-center">
                         {quantity}
                       </span>
                       <button

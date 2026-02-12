@@ -3,7 +3,7 @@
 import React, { useState, useActionState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { UserRoundPen, Mail, Lock, User, Phone, Loader2 } from "lucide-react";
-import { signup, login, forgotPassword } from "./action";
+import { signup, login } from "./action";
 
 export default function CustomerAuthPage() {
   // Toggle between Login and Signup
@@ -150,32 +150,34 @@ export default function CustomerAuthPage() {
           </button>
         </form>
 
-        {/* Forgot Password Link (only show on login) */}
-        {isLogin && (
-          <div className="text-center pt-2">
+        <div>
+          {/* Forgot Password Link (only show on login) */}
+          {isLogin && (
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => router.push("/shop/auth/forgot-password")}
+                className="text-xs font-bold text-radiance-goldColor hover:underline underline-offset-4"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
+
+          {/* Toggle between Signup and Login */}
+          <div className="text-center pt-2 border-t border-gray-50">
             <button
               type="button"
               disabled={isPending}
-              onClick={() => router.push("/shop/auth/forgot-password")}
+              onClick={() => setIsLogin(!isLogin)}
               className="text-xs font-bold text-radiance-goldColor hover:underline underline-offset-4"
             >
-              Forgot your password?
+              {isLogin
+                ? "New to JRADIANCE? SignUp"
+                : "Already have an account? LogIn"}
             </button>
           </div>
-        )}
-
-        {/* Toggle between Signup and Login */}
-        <div className="text-center pt-4 border-t border-gray-50">
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-xs font-bold text-radiance-goldColor hover:underline underline-offset-4"
-          >
-            {isLogin
-              ? "New to JRADIANCE? SignUp"
-              : "Already have an account? LogIn"}
-          </button>
         </div>
       </div>
     </div>

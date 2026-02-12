@@ -116,7 +116,7 @@ export default function RichViewer({
 
   return (
     <div className="rich-viewer">
-      <EditorContent editor={editor} className="min-h-[100px]" />
+      <EditorContent editor={editor} className="min-h-25" />
       <style jsx global>{`
         .rich-viewer .ProseMirror {
           outline: none;

@@ -6,7 +6,6 @@ import {
   Leaf,
   ShieldCheck,
   Star,
-  ShoppingBag,
   SearchIcon,
   Play,
   Facebook,
@@ -108,7 +107,7 @@ export default function LandingPage() {
           <h2 className="text-3xl font-black tracking-tight mb-8 text-center">
             Our Story
           </h2>
-          <div className="relative h-96 rounded-2xl overflow-hidden bg-gradient-to-r from-radiance-goldColor to-radiance-creamBackgroundColor flex items-center justify-center">
+          <div className="relative h-96 rounded-2xl overflow-hidden bg-linear-to-r from-radiance-goldColor to-radiance-creamBackgroundColor flex items-center justify-center">
             {/* Placeholder for presentation slides */}
             <div className="text-center p-8">
               <h3 className="text-2xl font-bold text-radiance-charcoalTextColor mb-4">
