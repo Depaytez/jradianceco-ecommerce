@@ -1,11 +1,34 @@
 "use client";
 
-import React, { useState, useActionState, useEffect } from "react";
+import React, { useState, useActionState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { UserRoundPen, Mail, Lock, User, Phone, Loader2 } from "lucide-react";
 import { signup, login } from "./action";
 
-export default function CustomerAuthPage() {
+// LOADING FALLBACK for Suspense
+function AuthLoadingFallback() {
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center px-6 py-12">
+      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-3xl shadow-xl border border-gray-50 animate-pulse">
+        <div className="text-center space-y-4">
+          <div className="mx-auto h-12 w-12 bg-gray-200 rounded-full" />
+          <div className="space-y-2">
+            <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto" />
+            <div className="h-4 bg-gray-100 rounded w-1/2 mx-auto" />
+          </div>
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-12 bg-gray-100 rounded-xl" />
+          ))}
+        </div>
+        <div className="h-12 bg-gray-300 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
+function AuthContent() {
   // Toggle between Login and Signup
   const [isLogin, setIsLogin] = useState(true);
 
@@ -181,5 +204,14 @@ export default function CustomerAuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// MAIN EXPORT WITH SUSPENSE BOUNDARY
+export default function CustomerAuthPage() {
+  return (
+    <Suspense fallback={<AuthLoadingFallback />}>
+      <AuthContent />
+    </Suspense>
   );
 }

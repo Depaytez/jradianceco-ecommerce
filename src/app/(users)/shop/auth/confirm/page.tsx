@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { CheckCircle, XCircle, Loader2, Mail } from "lucide-react";
 
-export default function EmailConfirmationPage() {
+// Inner component that uses useSearchParams - wrapped in Suspense
+function EmailConfirmationContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
@@ -135,5 +136,42 @@ export default function EmailConfirmationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback for Suspense
+function LoadingFallback() {
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center px-6 py-12">
+      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-3xl shadow-xl border border-gray-50">
+        <div className="text-center space-y-2">
+          <div className="mx-auto h-12 w-12 bg-radiance-goldColor/10 rounded-full flex items-center justify-center text-radiance-goldColor mb-2">
+            <Mail size={24} />
+          </div>
+          <h1 className="text-2xl font-black text-radiance-charcoalTextColor tracking-tight">
+            Email Confirmation
+          </h1>
+          <p className="text-xs text-gray-500 font-medium">
+            Verifying your email address
+          </p>
+        </div>
+        <div className="text-center space-y-4">
+          <Loader2
+            size={48}
+            className="animate-spin text-radiance-goldColor mx-auto"
+          />
+          <p className="text-gray-600">Confirming your email...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function EmailConfirmationPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <EmailConfirmationContent />
+    </Suspense>
   );
 }
