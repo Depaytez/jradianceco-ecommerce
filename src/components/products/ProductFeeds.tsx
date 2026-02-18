@@ -181,9 +181,11 @@ export default function ProductFeeds({
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
       {(title || subtitle) && (
-        <div className="text-center space-y-2">
+        <div className="space-y-2">
           {title && (
-            <h2 className="text-3xl font-black tracking-tight">{title}</h2>
+            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-900">
+              {title}
+            </h2>
           )}
           {subtitle && <p className="text-gray-500 text-sm">{subtitle}</p>}
         </div>
@@ -191,23 +193,26 @@ export default function ProductFeeds({
 
       {/* Search and Filters */}
       {(showSearch || showFilters) && (
-        <div className="space-y-4">
+        <div className="flex flex-col  md:flex-row md:items-center gap-4 justify-between">
           {/* Search Bar */}
           {showSearch && (
-            <form onSubmit={handleSearch} className="max-w-md mx-auto">
+            <form
+              onSubmit={handleSearch}
+              className="w-full relative flex-1 max-w-md mx-auto"
+            >
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-radiance-goldColor focus:border-transparent"
+                  className="w-full px-4 py-1.5 pr-12 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-radiance-goldColor focus:border-transparent text-sm md:text-base"
                 />
                 <button
                   type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-radiance-goldColor"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-radiance-goldColor transition-colors"
                 >
-                  <SearchIcon size={16} />
+                  <SearchIcon size={18} />
                 </button>
               </div>
             </form>
@@ -215,14 +220,14 @@ export default function ProductFeeds({
 
           {/* Filters and Sort */}
           {showFilters && (
-            <div className="flex flex-wrap items-center justify-center gap-4">
+            <div className="flex flex-wrap items-center gap-3 w-full justify-center md:w-auto">
               {/* Category Filter */}
-              <div className="flex items-center gap-2">
-                <Filter size={16} className="text-gray-500" />
+              <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-300 px-3 py-1.5 focus-within:ring-2 focus-within:ring-radiance-goldColor">
+                <Filter size={16} className="text-gray-500 shrink-0" />
                 <select
                   value={selectedCategory}
                   onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-radiance-goldColor focus:border-transparent text-sm"
+                  className=" bg-transparent border-none outline-none text-sm text-gray-700 w-full  "
                 >
                   <option value="">All Categories</option>
                   {categories.map((category) => (
@@ -234,12 +239,14 @@ export default function ProductFeeds({
               </div>
 
               {/* Sort - Note: Sorting is now handled by the backend for 'getProducts'. UI for sorting might need to pass params to fetch. */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Sort by:</span>
+              <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-300 px-3 py-1.5 focus-within:ring-2 focus-within:ring-radiance-goldColor">
+                <span className="text-sm text-gray-500 shrink-0 hidden sm:inline">
+                  Sort by:
+                </span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-radiance-goldColor focus:border-transparent text-sm"
+                  className="bg-transparent border-none outline-none text-sm text-gray-700 w-full"
                 >
                   <option value="newest">Newest</option>
                   <option value="price-low">Price: Low to High</option>
@@ -249,18 +256,20 @@ export default function ProductFeeds({
               </div>
 
               {/* View Mode */}
-              <div className="flex items-center gap-1 border border-gray-300 rounded-lg p-1">
+              <div className="flex items-center gap-1 border border-gray-300 rounded-lg p-1 bg-white ml-auto md:ml-0">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${viewMode === "grid" ? "bg-radiance-goldColor text-white" : "text-gray-600 hover:bg-gray-100"}`}
+                  className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-radiance-goldColor text-white" : "text-gray-500 hover:bg-gray-100"}`}
+                  aria-label="Grid view"
                 >
                   <Grid size={16} />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 rounded ${viewMode === "list" ? "bg-radiance-goldColor text-white" : "text-gray-600 hover:bg-gray-100"}`}
+                  className={`p-2 rounded ${viewMode === "list" ? "bg-radiance-goldColor text-white" : "text-gray-500 hover:bg-gray-100"}`}
+                  aria-label="List view"
                 >
-                  <List size={16} />
+                  <List size={12} />
                 </button>
               </div>
             </div>
@@ -268,57 +277,69 @@ export default function ProductFeeds({
         </div>
       )}
 
-      {/* Results Count */}
-      <div className="text-center text-sm text-gray-600">
-        {products.length} product
-        {products.length !== 1 ? "s" : ""} found
-      </div>
-
-      {/* Products Grid */}
-      {products.length > 0 ? (
-        <div
-          className={`grid gap-6 ${
-            viewMode === "grid"
-              ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-              : "grid-cols-1 md:grid-cols-2"
-          }`}
-        >
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onProductClick={handleProductClick}
-            />
-          ))}
+      {/* Grid Area Wrapper */}
+      <div className="space-y-4">
+        {/* Results Count */}
+        <div className="text-sm text-gray-500 font-medium">
+          {products.length} product
+          {products.length !== 1 ? "s" : ""} found
         </div>
-      ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-600">
-            No products found matching your criteria.
-          </p>
-        </div>
-      )}
 
-      {/* "See More" Button */}
-      {hasMore && (
-        <div className="text-center mt-8">
-          <button
-            onClick={handleLoadMore}
-            disabled={loadingMore}
-            className="bg-radiance-charcoalTextColor text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-radiance-goldColor transition-all shadow-lg disabled:bg-gray-400"
+        {/* Products Grid */}
+        {products.length > 0 ? (
+          <div
+            className={`grid gap-6 ${
+              viewMode === "grid"
+                ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                : "grid-cols-1 md:grid-cols-2"
+            }`}
           >
-            {loadingMore ? "Loading..." : "See More"}
-          </button>
-        </div>
-      )}
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onProductClick={handleProductClick}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-radiance-creamBackgroundColor rounded-2xl border border-dashed border-gray-200">
+            <p className="text-gray-500 font-medium">
+              No products found matching your criteria.
+            </p>
+          </div>
+        )}
 
-      {/* Product Detail Modal */}
-      {selectedProduct && (
-        <ProductDetail
-          product={selectedProduct}
-          onClose={handleCloseProductDetail}
-        />
-      )}
+        {/* "See More" Button */}
+        {hasMore && (
+          <div className="flex justify-center pt-4">
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              // className="bg-radiance-charcoalTextColor text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-radiance-goldColor transition-all shadow-lg disabled:bg-gray-400"
+              className="bg-radiance-charcoalTextColor text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-radiance-goldColor transition-all shadow-md hover:shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none min-w-40"
+            >
+              {/* {loadingMore ? "Loading..." : "See More"} */}
+              {loadingMore ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+                Loading...
+              </span>
+            ) : (
+              "See More"
+            )}
+            </button>
+          </div>
+        )}
+
+        {/* Product Detail Modal */}
+        {selectedProduct && (
+          <ProductDetail
+            product={selectedProduct}
+            onClose={handleCloseProductDetail}
+          />
+        )}
+      </div>
     </div>
   );
 }
