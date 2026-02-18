@@ -135,7 +135,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Trending Now section */}
-        <section className={sectionClass}>
+        <section className={`${sectionClass}`}>
           <div className="flex justify-between items-end mb-10">
             <div className="space-y-1">
               <h2 className="text-3xl font-black tracking-tight">
@@ -219,16 +219,34 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* Product Feeds section - Updated to include search functionality*/}
-        <section className={`product-list-section ${sectionClass}`}>
+        {/* Shop Product Feeds section - Updated to include search functionality*/}
+        <section className={`product-list-section justify-between ${sectionClass}`}>
+          <div className="flex justify-between items-end mb-10">
+            <div className="space-y-1">
+              <h2 className="text-3xl font-black tracking-tight">
+                JRadiance Cosmetics & Beauty Shop
+              </h2>
+              <p className="text-gray-500 text-sm">
+                Hand-picked organic solutions for your skin.
+              </p>
+            </div>
+            <Link
+              href="/shop?search=beauty"
+              className="text-radiance-goldColor font-bold text-sm underline underline-offset-4"
+            >
+              Visit Shop
+            </Link>
+          </div>
+
+          {/* ProductFeeds component for Shop Search */}
           <ProductFeeds
             initialProducts={initialMainProducts}
             initialFilters={{ limit: 8 }}
             feedType="all"
             showSearch={true}
             showFilters={true}
-            title="JRADIANCE Product Feeds"
-            subtitle="Hand-picked organic solutions for your skin."
+            title=""
+            subtitle=""
           />
         </section>
 
