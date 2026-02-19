@@ -10,7 +10,8 @@ import {
   ShoppingBag,
   GalleryVerticalEnd,
 } from "lucide-react";
-import CartOverlay, { CartItem } from "./CartOverlay";
+import CartOverlay from "./CartOverlay";
+import type { CartItem } from "@/types";
 
 // Navigation component for all pages except pages with "/admin/*"
 export default function BottomNavBar() {
@@ -35,7 +36,7 @@ export default function BottomNavBar() {
     }
   }, []);
 
-  // Handler to update product quantities or remove items
+  // Handler to update product quantities
   const handleUpdateQuantity = (id: string, delta: number) => {
     const updatedCart = cart
       .map((item) => {
@@ -46,6 +47,13 @@ export default function BottomNavBar() {
       })
       .filter((item) => item.quantity > 0);
 
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
+  // Handler to remove items from cart
+  const handleRemoveItem = (id: string) => {
+    const updatedCart = cart.filter((item) => item.id !== id);
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
@@ -84,6 +92,7 @@ export default function BottomNavBar() {
         onClose={() => setIsCartOpen(false)}
         cart={cart}
         onUpdateQuantity={handleUpdateQuantity}
+        onRemoveItem={handleRemoveItem}
       />
 
       {/* Positioning wrapper: flex-col (mobile) -> flex-row (desktop) */}

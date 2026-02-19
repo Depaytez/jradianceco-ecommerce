@@ -1,22 +1,15 @@
 "use client";
 import React from "react";
-import { X, ChevronRight, Plus, Minus, Trash2 } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import Link from "next/link";
-
-// Define a structured type for Cart Items
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image?: string;
-}
+import type { CartItem } from "@/types";
 
 interface CartOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   cart: CartItem[];
   onUpdateQuantity: (id: string, delta: number) => void;
+  onRemoveItem: (id: string) => void;
 }
 
 export default function CartOverlay({
@@ -24,12 +17,15 @@ export default function CartOverlay({
   onClose,
   cart,
   onUpdateQuantity,
+  onRemoveItem,
 }: CartOverlayProps) {
-  // Logic to calculate total price for all items in cart
-  const totalPrice = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0,
-  );
+  // Calculate total price for all items in cart
+  const totalPrice = cart.reduce((acc, item) => {
+    const price = item.product?.discount_price || item.product?.price || 0;
+    return acc + price * item.quantity;
+  }, 0);
+
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   if (!isOpen) return null;
 
@@ -41,13 +37,16 @@ export default function CartOverlay({
         onClick={onClose}
       />
 
-      {/* Overlay Card Content to display Cart */}
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5 pointer-events-auto border border-gray-100 mb-6 md:mb-0 flex flex-col">
+      {/* Overlay Card Content */}
+      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5 pointer-events-auto border border-gray-100 mb-6 md:mb-0 flex flex-col max-h-[70vh]">
         {/* Header with close button */}
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-base font-bold text-radiance-charcoalTextColor">
-            Cart
-          </h2>
+          <div className="flex items-center gap-2">
+            <ShoppingBag size={18} className="text-radiance-goldColor" />
+            <h2 className="text-base font-bold text-radiance-charcoalTextColor">
+              Your Cart ({totalItems})
+            </h2>
+          </div>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-full"
@@ -57,7 +56,7 @@ export default function CartOverlay({
         </div>
 
         {/* Scrollable list of products */}
-        <div className="max-h-[40vh] overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
           {cart.length > 0 ? (
             <div className="space-y-3">
               {cart.map((item) => (
@@ -65,32 +64,44 @@ export default function CartOverlay({
                   key={item.id}
                   className="flex items-center gap-2 p-2 rounded-xl border border-gray-50 bg-gray-50/30"
                 >
-                  {/* Clickable to open product detail */}
-                  <Link
-                    href={`/shop/${item.id}`}
-                    onClick={onClose}
-                    className="flex flex-1 items-center justify-between group"
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-radiance-charcoalTextColor group-hover:text-radiance-goldColor transition-colors">
-                        {item.name}
-                      </span>
-                      <span className="text-[10px] text-gray-500 font-medium">
-                        ₦{item.price.toLocaleString()}
-                      </span>
-                    </div>
-                    {/* ChevronRight used here to indicate the item can be opened */}
-                    <ChevronRight
-                      size={14}
-                      className="text-gray-300 group-hover:text-radiance-goldColor transition-colors mr-2"
+                  {/* Product Image */}
+                  {item.product?.images?.[0] ? (
+                    <img
+                      src={item.product.images[0]}
+                      alt={item.product.name}
+                      className="w-12 h-12 object-cover rounded-lg"
                     />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <ShoppingBag size={16} className="text-gray-400" />
+                    </div>
+                  )}
+
+                  {/* Product Info */}
+                  <Link
+                    href={`/products/${item.product_id}`}
+                    onClick={onClose}
+                    className="flex-1 group"
+                  >
+                    <span className="text-xs font-bold text-radiance-charcoalTextColor group-hover:text-radiance-goldColor transition-colors line-clamp-1">
+                      {item.product?.name}
+                    </span>
+                    <span className="text-[10px] text-gray-500 font-medium">
+                      ₦{(item.product?.discount_price || item.product?.price || 0).toLocaleString()}
+                    </span>
                   </Link>
 
-                  {/* Quantity Selector Logic */}
-                  <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-2 py-1 shadow-sm">
+                  {/* Quantity Selector */}
+                  <div className="flex items-center gap-1 bg-white border border-gray-100 rounded-lg px-1.5 py-1 shadow-sm">
                     <button
-                      onClick={() => onUpdateQuantity(item.id, -1)}
-                      className="text-gray-400 hover:text-radiance-goldColor transition-colors"
+                      onClick={() => {
+                        if (item.quantity === 1) {
+                          onRemoveItem(item.id);
+                        } else {
+                          onUpdateQuantity(item.id, -1);
+                        }
+                      }}
+                      className="p-1 text-gray-400 hover:text-radiance-goldColor transition-colors"
                     >
                       {item.quantity === 1 ? (
                         <Trash2 size={12} className="text-red-400" />
@@ -99,13 +110,13 @@ export default function CartOverlay({
                       )}
                     </button>
 
-                    <span className="text-xs font-black text-radiance-charcoalTextColor min-width:12px text-center">
+                    <span className="text-xs font-black text-radiance-charcoalTextColor min-w-[16px] text-center">
                       {item.quantity}
                     </span>
 
                     <button
                       onClick={() => onUpdateQuantity(item.id, 1)}
-                      className="text-gray-400 hover:text-radiance-goldColor transition-colors"
+                      className="p-1 text-gray-400 hover:text-radiance-goldColor transition-colors"
                     >
                       <Plus size={12} />
                     </button>
@@ -114,16 +125,17 @@ export default function CartOverlay({
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-400 py-4 text-xs font-medium">
-              Empty cart
-            </p>
+            <div className="text-center py-8">
+              <ShoppingBag size={48} className="mx-auto text-gray-300 mb-2" />
+              <p className="text-gray-500 text-sm font-medium">Your cart is empty</p>
+            </div>
           )}
         </div>
 
-        {/* Footer with total calculation and checkout button */}
+        {/* Footer with total and checkout button */}
         {cart.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex justify-between items-center mb-4">
+          <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+            <div className="flex justify-between items-center">
               <span className="text-xs font-medium text-gray-500">
                 Total Amount
               </span>
@@ -132,12 +144,13 @@ export default function CartOverlay({
               </span>
             </div>
 
-            <button
-              className="w-full bg-radiance-goldColor text-white text-xs font-bold py-3 rounded-xl shadow-lg hover:opacity-90 transition-opacity"
-              onClick={() => console.log("Proceeding to checkout")}
+            <Link
+              href="/shop/checkout"
+              onClick={onClose}
+              className="block w-full bg-radiance-goldColor text-white text-xs font-bold py-3 rounded-xl shadow-lg hover:opacity-90 transition-opacity text-center"
             >
-              Pay to Checkout Cart
-            </button>
+              Proceed to Checkout
+            </Link>
           </div>
         )}
       </div>

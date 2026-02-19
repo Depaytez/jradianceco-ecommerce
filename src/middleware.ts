@@ -38,12 +38,23 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getUser();
   const url = req.nextUrl.clone();
 
-  // Protect Admin Routes
-  if (
-    url.pathname.startsWith("/admin") &&
-    !url.pathname.startsWith("/admin/login")
-  ) {
-    if (!user) return NextResponse.redirect(new URL("/admin/login", req.url));
+  // Admin Routes Protection
+  const adminRoutes = [
+    "/admin/dashboard",
+    "/admin/roles",
+    "/admin/users",
+    "/admin/agents",
+    "/admin/sales-log",
+    "/admin/audit-log",
+    "/admin/catalog",
+    "/admin/issues",
+    "/admin/orders",
+  ];
+
+  if (url.pathname.startsWith("/admin") && url.pathname !== "/admin/login") {
+    if (!user) {
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
 
     // Fetch role from profiles table
     const { data: profile } = await supabase
@@ -55,7 +66,23 @@ export async function middleware(req: NextRequest) {
     // Allow admin, agent, and chief_admin roles
     const allowedRoles = ["admin", "agent", "chief_admin"];
     if (!profile?.role || !allowedRoles.includes(profile.role)) {
-      return NextResponse.redirect(new URL("/", req.url)); // Boot non-admins to home
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    // Role-based access control for specific admin routes
+    const chiefAdminOnlyRoutes = ["/admin/users", "/admin/roles", "/admin/agents"];
+    if (chiefAdminOnlyRoutes.some((route) => url.pathname.startsWith(route))) {
+      if (profile.role !== "chief_admin") {
+        return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+      }
+    }
+
+    // Agent restrictions
+    const agentRestrictedRoutes = ["/admin/audit-log", "/admin/sales-log"];
+    if (agentRestrictedRoutes.some((route) => url.pathname.startsWith(route))) {
+      if (profile.role === "agent") {
+        return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+      }
     }
 
     // Log admin access for audit trail
@@ -64,6 +91,8 @@ export async function middleware(req: NextRequest) {
         admin_id: user.id,
         action: "dashboard_access",
         resource_type: "admin_dashboard",
+        resource_id: null,
+        changes: { path: url.pathname },
       });
     } catch (error) {
       // Don't block request if logging fails
@@ -71,8 +100,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Protect Customer Account Routes
-  const protectedCustomerRoutes = ["/shop/history", "/shop/wishlist"];
+  // Customer Routes Protection
+  const protectedCustomerRoutes = [
+    "/shop/history",
+    "/shop/wishlist",
+    "/shop/checkout",
+  ];
+
   if (protectedCustomerRoutes.some((path) => url.pathname.startsWith(path))) {
     if (!user) {
       const redirectUrl = new URL("/shop/auth", req.url);
@@ -84,12 +118,6 @@ export async function middleware(req: NextRequest) {
   return res;
 }
 
-// export const config = {
-//   // Matches all request paths except for the ones starting with:
-//   // _next/static, _next/image, favicon.ico, and public images
-//   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
-// };
-
 export const config = {
-  matcher: ["/admin/:path*", "/shop/history", "/shop/wishlist"],
+  matcher: ["/admin/:path*", "/shop/history", "/shop/wishlist", "/shop/checkout"],
 };
