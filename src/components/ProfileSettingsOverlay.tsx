@@ -11,6 +11,8 @@ import {
   Twitter,
   UserRoundPen,
   ChevronRight,
+  LayoutDashboard,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,7 +36,7 @@ export default function ProfileSettingsOverlay({
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
-      onClose(); 
+      onClose();
       router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
@@ -76,15 +78,36 @@ export default function ProfileSettingsOverlay({
                   {user.email ? user.email[0].toUpperCase() : "U"}
                 </span>
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col flex-1">
                 <span className="font-bold text-radiance-charcoalTextColor text-sm">
                   {user.email || "User"}
                 </span>
-                <span className="text-[10px] text-gray-500 uppercase font-medium">
-                  {user.role}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-500 uppercase font-medium">
+                    {user.role}
+                  </span>
+                  {["admin", "agent", "chief_admin", "customer"].includes(
+                    user.role,
+                  ) && <Shield size={12} className="text-radiance-goldColor" />}
+                </div>
               </div>
             </div>
+
+            {/* Admin Dashboard Link */}
+            {["admin", "agent", "chief_admin", "customer"].includes(
+              user.role,
+            ) && (
+              <Link
+                href="/admin/dashboard"
+                className="flex items-center justify-between w-full bg-radiance-goldColor/10 border border-radiance-goldColor/20 text-radiance-goldColor text-xs font-bold py-3 px-4 rounded-lg hover:bg-radiance-goldColor/20 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <LayoutDashboard size={16} />
+                  <span>Admin Dashboard</span>
+                </div>
+                <ChevronRight size={16} />
+              </Link>
+            )}
 
             <div className="px-2 space-y-2 text-xs text-gray-600">
               <p>
@@ -93,9 +116,11 @@ export default function ProfileSettingsOverlay({
                   {user.email}
                 </span>
               </p>
-              {user.role && (
+              {["admin", "agent", "chief_admin", "customer"].includes(
+                user.role,
+              ) && (
                 <p>
-                  <strong>Role:</strong>{" "}
+                  <strong>Role: </strong>{" "}
                   <span className="capitalize text-radiance-goldColor font-semibold">
                     {user.role}
                   </span>

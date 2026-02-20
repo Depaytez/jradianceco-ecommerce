@@ -1,6 +1,6 @@
 /**
  * Products Catalog Page
- * 
+ *
  * Admin can create, edit, delete, and manage products.
  * Access: Admin, Chief Admin, Agent
  */
@@ -9,8 +9,8 @@
 
 import { useState, useEffect, useActionState } from "react";
 import { getProducts } from "@/utils/supabase/services";
-import { createProduct, updateProduct, deleteProduct, toggleProductStatus, checkPermission } from "../action";
-import { Package, Plus, Edit, Trash2, ToggleLeft, Image as ImageIcon } from "lucide-react";
+import { createProduct, updateProduct, deleteProduct, toggleProductStatus, checkPermission, uploadProductMedia } from "../action";
+import { Package, Plus, Edit, Trash2, ToggleLeft, Image as ImageIcon, X, Upload, FileVideo } from "lucide-react";
 import type { Product } from "@/types";
 
 export default function ProductsCatalogPage() {
@@ -34,6 +34,11 @@ export default function ProductsCatalogPage() {
     sku: "",
     images: "",
   });
+
+  // File upload state
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     checkPermissions();
@@ -65,6 +70,8 @@ export default function ProductsCatalogPage() {
       sku: product.sku || "",
       images: product.images?.join(", ") || "",
     });
+    setUploadedImages(product.images || []);
+    setSelectedFiles([]);
     setShowModal(true);
   }
 
@@ -81,45 +88,74 @@ export default function ProductsCatalogPage() {
       sku: "",
       images: "",
     });
+    setUploadedImages([]);
+    setSelectedFiles([]);
     setShowModal(true);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setActionLoading("submit");
+    setUploading(true);
 
-    const productData = {
-      name: formData.name,
-      slug: formData.slug,
-      description: formData.description || null,
-      category: formData.category,
-      price: parseFloat(formData.price),
-      discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
-      stock_quantity: parseInt(formData.stock_quantity),
-      sku: formData.sku || null,
-      images: formData.images.split(",").map((img) => img.trim()).filter(Boolean),
-      attributes: {},
-    };
+    try {
+      let finalImages = [...uploadedImages];
 
-    let result;
-    if (editingProduct) {
-      result = await updateProduct(editingProduct.id, productData);
-    } else {
-      result = await createProduct(productData);
+      // Upload new files if any
+      if (selectedFiles.length > 0) {
+        const uploadFormData = new FormData();
+        selectedFiles.forEach((file) => uploadFormData.append("files", file));
+
+        const uploadResult = await uploadProductMedia(uploadFormData, "products");
+
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || "Failed to upload media");
+        }
+
+        // Add uploaded URLs to images array
+        finalImages = [...finalImages, ...uploadResult.results!.map((r) => r.url)];
+      }
+
+      const productData = {
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description || null,
+        category: formData.category,
+        price: parseFloat(formData.price),
+        discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
+        stock_quantity: parseInt(formData.stock_quantity),
+        sku: formData.sku || null,
+        images: finalImages,
+        attributes: {},
+      };
+
+      let result;
+      if (editingProduct) {
+        result = await updateProduct(editingProduct.id, productData);
+      } else {
+        result = await createProduct(productData);
+      }
+
+      setMessage({ type: result.success ? "success" : "error", text: result.message || result.error || "" });
+      if (result.success) {
+        setShowModal(false);
+        loadProducts();
+      }
+    } catch (error) {
+      setMessage({ 
+        type: "error", 
+        text: error instanceof Error ? error.message : "An error occurred" 
+      });
+    } finally {
+      setUploading(false);
+      setActionLoading(null);
+      setTimeout(() => setMessage(null), 3000);
     }
-
-    setMessage({ type: result.success ? "success" : "error", text: result.message || result.error || "" });
-    if (result.success) {
-      setShowModal(false);
-      loadProducts();
-    }
-    setActionLoading(null);
-    setTimeout(() => setMessage(null), 3000);
   }
 
   async function handleDelete(productId: string) {
     if (!confirm("Are you sure you want to delete this product?")) return;
-    
+
     setActionLoading(productId);
     const result = await deleteProduct(productId);
     setMessage({ type: result.success ? "success" : "error", text: result.message || result.error || "" });
@@ -135,6 +171,23 @@ export default function ProductsCatalogPage() {
     if (result.success) loadProducts();
     setActionLoading(null);
     setTimeout(() => setMessage(null), 3000);
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...files]);
+    }
+    // Reset input value to allow selecting the same file again
+    e.target.value = "";
+  }
+
+  function handleRemoveFile(index: number) {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleRemoveUploadedUrl(url: string) {
+    setUploadedImages((prev) => prev.filter((img) => img !== url));
   }
 
   if (!hasAccess) {
@@ -353,15 +406,91 @@ export default function ProductsCatalogPage() {
                 </div>
               </div>
 
+              {/* Media Upload Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URLs (comma-separated)</label>
-                <input
-                  type="text"
-                  value={formData.images}
-                  onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                  placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-radiance-goldColor focus:border-transparent"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Images/Videos</label>
+                
+                {/* Upload Area */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-radiance-goldColor transition-colors">
+                  <input
+                    type="file"
+                    id="media-upload"
+                    multiple
+                    accept="image/*,video/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                  <label
+                    htmlFor="media-upload"
+                    className="cursor-pointer flex flex-col items-center gap-2"
+                  >
+                    <Upload size={32} className="text-gray-400" />
+                    <div className="text-sm text-gray-600">
+                      <span className="font-semibold text-radiance-goldColor">Click to upload</span> or drag and drop
+                    </div>
+                    <p className="text-xs text-gray-500">Images (JPG, PNG, GIF, WEBP) or Videos (MP4, WEBM)</p>
+                  </label>
+                </div>
+
+                {/* Uploaded Images Preview */}
+                {uploadedImages.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-xs font-medium text-gray-600 mb-2">Uploaded Media:</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {uploadedImages.map((url, index) => (
+                        <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200">
+                          {url.match(/\.(mp4|webm|mov)$/i) ? (
+                            <video src={url} className="w-full h-full object-cover" controls={false} />
+                          ) : (
+                            <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveUploadedUrl(url)}
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Files Pending Upload */}
+                {selectedFiles.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-xs font-medium text-gray-600 mb-2">Files to upload:</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                          {file.type.startsWith("video/") ? (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <FileVideo size={32} className="text-gray-400" />
+                            </div>
+                          ) : (
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={file.name}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] p-1 truncate">
+                            {file.name}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFile(index)}
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4">
@@ -374,10 +503,10 @@ export default function ProductsCatalogPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={actionLoading === "submit"}
+                  disabled={actionLoading === "submit" || uploading}
                   className="flex-1 px-6 py-3 bg-radiance-goldColor text-white rounded-xl font-medium hover:bg-radiance-charcoalTextColor transition-colors disabled:opacity-50"
                 >
-                  {actionLoading === "submit" ? "Saving..." : editingProduct ? "Update Product" : "Create Product"}
+                  {uploading ? "Uploading Media..." : actionLoading === "submit" ? "Saving..." : editingProduct ? "Update Product" : "Create Product"}
                 </button>
               </div>
             </form>

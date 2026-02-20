@@ -26,6 +26,7 @@ import { createStaticClient } from "@/utils/supabase/static-client";
 import type { UserRole, OrderStatus } from "@/types";
 import { AuthState } from "@/types/index";
 import { revalidatePath } from "next/cache";
+import { uploadFileToFTP, uploadMultipleFilesToFTP } from "@/utils/ftp-upload";
 
 /* =============================================================================
    Authentication Actions
@@ -832,6 +833,158 @@ export async function toggleProductStatus(productId: string): Promise<AdminActio
       error: error instanceof Error ? error.message : "Failed to toggle product status",
     };
   }
+}
+
+/* =============================================================================
+   Media Upload (Agent+ Access)
+   ============================================================================= */
+
+/**
+ * Upload Product Media
+ *
+ * Uploads images/videos to Namecheap FTP storage.
+ * Returns URLs that can be stored in product record.
+ *
+ * @param formData - FormData containing files array
+ * @param folder - Destination folder (default: "products")
+ * @returns Array of upload results with URLs
+ *
+ * @security Agent, Admin, Chief Admin only
+ */
+export async function uploadProductMedia(
+  formData: FormData,
+  folder: string = "products"
+): Promise<{
+  success: boolean;
+  results?: Array<{ filename: string; url: string }>;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify permissions
+    const hasPermission = await checkPermission("agent");
+    if (!hasPermission) {
+      return { success: false, error: "Insufficient permissions" };
+    }
+
+    // Extract files from FormData
+    const files = formData.getAll("files") as File[];
+    
+    if (!files || files.length === 0) {
+      return { success: false, error: "No files provided" };
+    }
+
+    // Validate file types (images and videos only)
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "video/mp4",
+      "video/webm",
+      "video/quicktime",
+    ];
+
+    const validFiles = files.filter((file) => 
+      allowedTypes.includes(file.type) || file.type.startsWith("image/") || file.type.startsWith("video/")
+    );
+
+    if (validFiles.length === 0) {
+      return { 
+        success: false, 
+        error: "Invalid file types. Only images and videos are allowed." 
+      };
+    }
+
+    // Upload files to FTP
+    const uploadResults = await uploadMultipleFilesToFTP(validFiles, folder);
+
+    // Process results
+    const successfulUploads = uploadResults
+      .filter((result): result is { success: true; url: string; filename: string } => 
+        result.success && !!result.url
+      )
+      .map((result) => ({
+        filename: result.filename!,
+        url: result.url!,
+      }));
+
+    if (successfulUploads.length === 0) {
+      return { 
+        success: false, 
+        error: "Failed to upload any files. Please check FTP configuration." 
+      };
+    }
+
+    // Log the action
+    await supabase.from("admin_activity_logs").insert({
+      admin_id: user.id,
+      action: "media_uploaded",
+      resource_type: "media",
+      changes: {
+        folder,
+        count: successfulUploads.length,
+        filenames: successfulUploads.map((u) => u.filename),
+      },
+    });
+
+    return {
+      success: true,
+      results: successfulUploads,
+    };
+  } catch (error) {
+    console.error("Error uploading media:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to upload media",
+    };
+  }
+}
+
+/**
+ * Upload Single Product Image
+ *
+ * Convenience function for uploading a single image.
+ *
+ * @param file - File object to upload
+ * @returns Upload result with URL
+ */
+export async function uploadProductImage(
+  file: File
+): Promise<{
+  success: boolean;
+  url?: string;
+  error?: string;
+}> {
+  const result = await uploadFileToFTP(file, "products/images");
+  return result;
+}
+
+/**
+ * Upload Product Video
+ *
+ * Convenience function for uploading a single video.
+ *
+ * @param file - File object to upload
+ * @returns Upload result with URL
+ */
+export async function uploadProductVideo(
+  file: File
+): Promise<{
+  success: boolean;
+  url?: string;
+  error?: string;
+}> {
+  const result = await uploadFileToFTP(file, "products/videos");
+  return result;
 }
 
 /* =============================================================================

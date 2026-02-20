@@ -110,7 +110,7 @@ export default function CartOverlay({
                       )}
                     </button>
 
-                    <span className="text-xs font-black text-radiance-charcoalTextColor min-w-[16px] text-center">
+                    <span className="text-xs font-black text-radiance-charcoalTextColor min-w-4 text-center">
                       {item.quantity}
                     </span>
 
