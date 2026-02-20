@@ -2,10 +2,6 @@
  * Product JSON-LD Structured Data Component
  * 
  * Generates schema.org/Product structured data for rich search results.
- * Follows SOLID principles:
- * - Single Responsibility: Only handles JSON-LD generation for products
- * - ISP: Focused interface for product schema only
- * - DRY: Reusable across different product page implementations
  */
 
 import { Product } from "@/types";

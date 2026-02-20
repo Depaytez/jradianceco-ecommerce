@@ -3,11 +3,6 @@
  * 
  * Used in server components, API routes, and server actions
  * All queries go through these functions
- * 
- * Follows SOLID principles:
- * - SRP: Each function handles one database operation
- * - CQS: Separates queries (get) from commands (add, update)
- * - DIP: Depends on Supabase abstraction
  */
 
 import { createClient } from "./server";

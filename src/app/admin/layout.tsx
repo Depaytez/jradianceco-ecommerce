@@ -2,9 +2,6 @@
  * Admin Layout
  * 
  * Provides consistent layout for all admin pages with sidebar navigation.
- * Follows SOLID principles:
- * - SRP: Only handles admin layout structure
- * - DIP: Depends on context abstractions
  */
 
 import AdminSidePanel from "@/components/AdminSidePanel";

@@ -2,10 +2,6 @@
  * Dynamic Sitemap Generator
  * 
  * Generates sitemap.xml dynamically based on Supabase data.
- * Follows SOLID principles:
- * - Single Responsibility: Only handles sitemap generation
- * - DRY: Reuses services from services-server
- * - KISS: Simple, straightforward implementation
  */
 
 import { MetadataRoute } from "next";

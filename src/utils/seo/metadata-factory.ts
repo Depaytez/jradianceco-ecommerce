@@ -2,10 +2,6 @@
  * SEO Metadata Factory
  * 
  * Provides reusable functions for generating consistent metadata across the application.
- * Follows SOLID principles:
- * - Single Responsibility: Each function handles one type of metadata
- * - Open/Closed: Extensible for new metadata types without modification
- * - Dependency Inversion: Uses abstractions for configuration
  */
 
 import type { Metadata } from "next";

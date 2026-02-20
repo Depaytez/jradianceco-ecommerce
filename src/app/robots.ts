@@ -2,9 +2,6 @@
  * Robots.txt Generator
  * 
  * Generates robots.txt dynamically to guide search engine crawlers.
- * Follows SOLID principles:
- * - Single Responsibility: Only handles robots.txt generation
- * - KISS: Simple, straightforward implementation
  */
 
 import { MetadataRoute } from "next";

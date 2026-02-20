@@ -6,11 +6,6 @@
  * - JSON-LD structured data
  * - Server-side rendering for optimal SEO
  * - Breadcrumb navigation
- * 
- * Follows SOLID principles:
- * - SRP: Only handles product detail display
- * - DIP: Uses abstractions (services) for data fetching
- * - CQS: Separates data retrieval from UI rendering
  */
 
 import { notFound } from "next/navigation";

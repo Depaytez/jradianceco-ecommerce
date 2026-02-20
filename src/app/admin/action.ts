@@ -15,11 +15,6 @@
  * - Activity Logs (Audit Trail)
  * - Sales Reports
  * 
- * SOLID Principles Applied:
- * - SRP: Each function handles one operation
- * - CQS: Separates queries from commands
- * - DIP: Depends on Supabase abstraction
- * 
  * @author Philip Depaytez
  * @version 2.0.0
  */
